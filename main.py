@@ -1,14 +1,15 @@
 import asyncio
 import os
 from telethon import TelegramClient, events
+from telethon.sessions import StringSession
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
 
 API_ID = int(os.environ.get("API_ID"))
 API_HASH = os.environ.get("API_HASH")
 SESSION = os.environ.get("SESSION")
-SOURCE = int(os.environ.get("SOURCE", "-1001263412188"))
-DEST = int(os.environ.get("DEST", "-1003803840028"))
+SOURCE = -1001263412188
+DEST = -1003803840028
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -20,7 +21,7 @@ class Handler(BaseHTTPRequestHandler):
 
 threading.Thread(target=lambda: HTTPServer(("0.0.0.0", 10000), Handler).serve_forever(), daemon=True).start()
 
-client = TelegramClient("session", API_ID, API_HASH)
+client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 
 @client.on(events.NewMessage(chats=SOURCE))
 async def handler(event):
