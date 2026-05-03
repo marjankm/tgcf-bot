@@ -1,7 +1,7 @@
 import subprocess
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -12,7 +12,9 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 def run_server():
-    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+    HTTPServer(("0.0.0.0", 10000), Handler).serve_forever()
 
 threading.Thread(target=run_server, daemon=True).start()
-subprocess.run(["tgcf", "live"])
+
+env = os.environ.copy()
+subprocess.run(["tgcf", "live", "--flood-bypass"], env=env)
