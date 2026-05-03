@@ -25,7 +25,7 @@ client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 
 @client.on(events.NewMessage(chats=SOURCE))
 async def handler(event):
-    await client.forward_messages(DEST, event.message)
+    await client.send_message(DEST, event.message.text)
 
 with client:
     client.run_until_disconnected()
