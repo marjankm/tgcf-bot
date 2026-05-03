@@ -1,0 +1,12 @@
+login:
+  API_ID: ${API_ID}
+  API_HASH: ${API_HASH}
+  SESSION: ${SESSION}
+
+whitelist:
+  - -1001263412188
+
+destination:
+  - -1003803840028
+
+show_ui: false
