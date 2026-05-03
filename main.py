@@ -1,31 +1,30 @@
-import asyncio
-import os
-from telethon import TelegramClient, events
-from telethon.sessions import StringSession
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import threading
-
-API_ID = int(os.environ.get("API_ID"))
-API_HASH = os.environ.get("API_HASH")
-SESSION = os.environ.get("SESSION")
-SOURCE = -1001263412188
-DEST = -1003803840028
-
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Bot running!")
-    def log_message(self, *args):
-        pass
-
-threading.Thread(target=lambda: HTTPServer(("0.0.0.0", 10000), Handler).serve_forever(), daemon=True).start()
-
-client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
-
 @client.on(events.NewMessage(chats=SOURCE))
 async def handler(event):
-    await client.send_message(DEST, event.message.text)
-
-with client:
-    client.run_until_disconnected()
+    text = event.message.text
+    if not text:
+        return
+    
+    # Block links and usernames
+    blocked_links = [
+        "t.me", "telegram.me", "http://", "https://", "@",
+        "x.com", "twitter.com"
+    ]
+    
+    # Block promotional keywords
+    blocked_words = [
+        "follow us", "premium", "subscribe", "join",
+        "pip net profit", "winning trades", "losing trades",
+        "accuracy", "upgrade your trading", "trade smarter",
+        "sm team", "sm co", "srosh", "signals chat",
+        "economic news", "analytics channel", "discussion group",
+        "best regards", "want the same results",
+        "while many traders", "join today"
+    ]
+    
+    text_lower = text.lower()
+    
+    for word in blocked_links + blocked_words:
+        if word.lower() in text_lower:
+            return
+    
+    await client.send_message(DEST, text)
