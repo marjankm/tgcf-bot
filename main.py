@@ -1,5 +1,6 @@
 import os
 import threading
+from datetime import datetime, timezone, timedelta
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
@@ -47,7 +48,6 @@ async def handler(event):
         if word.lower() in text.lower():
             return
     
-    # Remove x.com and https links and SM NEWS line
     clean_lines = []
     for line in text.split("\n"):
         if "x.com" in line.lower():
@@ -65,7 +65,12 @@ async def handler(event):
     if not clean_text:
         return
     
-    await client.send_message(DEST, clean_text, link_preview=False)
+    # Add timestamp and source
+    ist = timezone(timedelta(hours=5, minutes=30))
+    now = datetime.now(ist).strftime("%d %b %Y | %I:%M %p IST")
+    final_text = f"{clean_text}\n\n📰 Reuters 0delaynews\n⏰ {now}\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
+    
+    await client.send_message(DEST, final_text, link_preview=False, parse_mode='md')
 
 with client:
     client.run_until_disconnected()
