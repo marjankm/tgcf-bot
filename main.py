@@ -32,6 +32,8 @@ async def handler(event):
     
     blocked = [
         "t.me", "telegram.me", "@",
+        "follow us on x",
+        "for even faster headlines",
         "follow us", "premium", "subscribe",
         "pip net profit", "winning trades", "losing trades",
         "upgrade your trading", "trade smarter",
@@ -39,17 +41,31 @@ async def handler(event):
         "best regards", "want the same results",
         "join today", "financialjuice",
         "walter bloomberg", "join our",
-        "follow us on x",
-        "for even faster headlines",
-        "marketnews_feed",
-        "x.com"
     ]
     
     for word in blocked:
         if word.lower() in text.lower():
             return
     
-    await client.send_message(DEST, text)
+    # Remove x.com and https links and SM NEWS line
+    clean_lines = []
+    for line in text.split("\n"):
+        if "x.com" in line.lower():
+            continue
+        if "https://" in line.lower():
+            continue
+        if "http://" in line.lower():
+            continue
+        if "updates from" in line.lower():
+            break
+        clean_lines.append(line)
+    
+    clean_text = "\n".join(clean_lines).strip()
+    
+    if not clean_text:
+        return
+    
+    await client.send_message(DEST, clean_text, link_preview=False)
 
 with client:
     client.run_until_disconnected()
