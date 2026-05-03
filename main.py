@@ -24,20 +24,31 @@ client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 
 @client.on(events.NewMessage(chats=SOURCE))
 async def handler(event):
-    text = event.message.text
+    msg = event.message
+    text = msg.text
+    
     if not text:
         return
+    
     blocked = [
-        "t.me", "telegram.me", "http://", "https://", "@",
-        "x.com", "follow us", "premium", "subscribe", "join",
+        "t.me", "telegram.me", "@",
+        "follow us", "premium", "subscribe",
         "pip net profit", "winning trades", "losing trades",
-        "accuracy", "upgrade your trading", "trade smarter",
-        "sm team", "sm co", "srosh", "best regards",
-        "want the same results", "join today"
+        "upgrade your trading", "trade smarter",
+        "sm team", "sm co", "srosh",
+        "best regards", "want the same results",
+        "join today", "financialjuice",
+        "walter bloomberg", "join our",
+        "follow us on x",
+        "for even faster headlines",
+        "marketnews_feed",
+        "x.com"
     ]
+    
     for word in blocked:
         if word.lower() in text.lower():
             return
+    
     await client.send_message(DEST, text)
 
 with client:
