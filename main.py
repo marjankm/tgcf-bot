@@ -31,6 +31,7 @@ async def handler(event):
     if not text:
         return
     
+    # Block entire message if contains these
     blocked = [
         "t.me", "telegram.me", "@",
         "follow us on x",
@@ -48,6 +49,7 @@ async def handler(event):
         if word.lower() in text.lower():
             return
     
+    # Strip links and branding line by line
     clean_lines = []
     for line in text.split("\n"):
         if "x.com" in line.lower():
@@ -58,6 +60,11 @@ async def handler(event):
             continue
         if "updates from" in line.lower():
             break
+        # Remove trailing "..."
+        line = line.rstrip(".")
+        line = line.strip()
+        if line == "..":
+            continue
         clean_lines.append(line)
     
     clean_text = "\n".join(clean_lines).strip()
