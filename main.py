@@ -7,7 +7,7 @@ from telethon.sessions import StringSession
 API_ID = int(os.environ.get("API_ID"))
 API_HASH = os.environ.get("API_HASH")
 SESSION = os.environ.get("SESSION")
-SOURCE = -1001263412188
+SOURCE = [-1001263412188, -1001553432571, -1003552874886]
 DEST = -1003803840028
 
 class Handler(BaseHTTPRequestHandler):
