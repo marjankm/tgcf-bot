@@ -1,1 +1,1 @@
-tgcf==1.1.8
+telethon
