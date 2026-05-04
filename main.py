@@ -8,7 +8,7 @@ from telethon.sessions import StringSession
 API_ID = int(os.environ.get("API_ID"))
 API_HASH = os.environ.get("API_HASH")
 SESSION = os.environ.get("SESSION")
-SOURCE = [-1001263412188, -1001553432571, -1003552874886]
+SOURCE = [-1001263412188, -1001553432571, -1003552874886, -1001860107178]
 DEST = -1003803840028
 
 class Handler(BaseHTTPRequestHandler):
@@ -23,16 +23,30 @@ threading.Thread(target=lambda: HTTPServer(("0.0.0.0", 10000), Handler).serve_fo
 
 client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 
+# Detect if text is Spanish
+def is_spanish(text):
+    spanish_words = [
+        "que", "con", "para", "por", "una", "los", "las",
+        "del", "sus", "como", "pero", "más", "este", "esta",
+        "también", "años", "sobre", "entre", "cuando", "donde",
+        "únete", "ahora", "noticias", "análisis", "verdad"
+    ]
+    text_lower = text.lower()
+    count = sum(1 for word in spanish_words if f" {word} " in f" {text_lower} ")
+    return count >= 3
+
 @client.on(events.NewMessage(chats=SOURCE))
 async def handler(event):
     msg = event.message
-    
-    # Use raw_text to get full text even with web previews
     text = msg.raw_text
-    
+
     if not text:
         return
-    
+
+    # Block Spanish messages
+    if is_spanish(text):
+        return
+
     # Block entire message if contains these
     blocked = [
         "t.me", "telegram.me", "@",
@@ -45,12 +59,16 @@ async def handler(event):
         "best regards", "want the same results",
         "join today", "financialjuice",
         "walter bloomberg", "join our",
+        "boost us", "geopolitics prime",
+        "geopolitics_prime", "leave a comment",
+        "for our spanish", "no conspiracy theory",
+        "same tired old tactics",
     ]
-    
+
     for word in blocked:
         if word.lower() in text.lower():
             return
-    
+
     # Strip links and branding line by line
     clean_lines = []
     for line in text.split("\n"):
@@ -63,17 +81,17 @@ async def handler(event):
         if "updates from" in line.lower():
             break
         clean_lines.append(line)
-    
+
     clean_text = "\n".join(clean_lines).strip()
-    
+
     if not clean_text:
         return
-    
+
     # Add timestamp and source
     ist = timezone(timedelta(hours=5, minutes=30))
     now = datetime.now(ist).strftime("%d %b %Y | %I:%M %p IST")
     final_text = f"{clean_text}\n\n📰 Reuters 0delaynews\n⏰ {now}\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
-    
+
     await client.send_message(DEST, final_text, link_preview=False, parse_mode='md')
 
 with client:
