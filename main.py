@@ -26,7 +26,9 @@ client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 @client.on(events.NewMessage(chats=SOURCE))
 async def handler(event):
     msg = event.message
-    text = msg.text
+    
+    # Use raw_text to get full text even with web previews
+    text = msg.raw_text
     
     if not text:
         return
@@ -60,11 +62,6 @@ async def handler(event):
             continue
         if "updates from" in line.lower():
             break
-        # Remove trailing "..."
-        line = line.rstrip(".")
-        line = line.strip()
-        if line == "..":
-            continue
         clean_lines.append(line)
     
     clean_text = "\n".join(clean_lines).strip()
