@@ -2,6 +2,8 @@ import asyncio
 import os
 import aiohttp
 from datetime import datetime, timezone, timedelta
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
@@ -10,6 +12,16 @@ API_HASH = os.environ.get("API_HASH")
 SESSION = os.environ.get("SESSION")
 DEST = -1003803840028
 IST = timezone(timedelta(hours=5, minutes=30))
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Calendar bot running!")
+    def log_message(self, *args):
+        pass
+
+threading.Thread(target=lambda: HTTPServer(("0.0.0.0", 10000), Handler).serve_forever(), daemon=True).start()
 
 async def post_calendar(client):
     try:
@@ -61,11 +73,9 @@ async def post_calendar(client):
         print(f"Calendar error: {e}")
 
 async def schedule_calendar(client):
-    # Post immediately for testing
     print("Posting calendar now for test...")
     await post_calendar(client)
-    
-    # Then schedule daily at 7:00 AM IST
+
     while True:
         now = datetime.now(IST)
         target = now.replace(hour=7, minute=0, second=0, microsecond=0)
