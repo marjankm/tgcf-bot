@@ -23,7 +23,6 @@ threading.Thread(target=lambda: HTTPServer(("0.0.0.0", 10000), Handler).serve_fo
 
 client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 
-# Detect if text is Spanish
 def is_spanish(text):
     spanish_words = [
         "que", "con", "para", "por", "una", "los", "las",
@@ -49,7 +48,10 @@ async def handler(event):
 
     # Block entire message if contains these
     blocked = [
-        "t.me", "telegram.me", "@",
+        "t.me", "telegram.me",
+        "@sroshmayi", "@srosh_support",
+        "@sroshmayi_bot", "@marketfeed",
+        "@marketnews_feed", "@geopolitics_prime",
         "follow us on x",
         "for even faster headlines",
         "follow us", "premium", "subscribe",
@@ -59,10 +61,8 @@ async def handler(event):
         "best regards", "want the same results",
         "join today", "financialjuice",
         "walter bloomberg", "join our",
-        "boost us", "geopolitics prime",
-        "geopolitics_prime", "leave a comment",
-        "for our spanish", "no conspiracy theory",
-        "same tired old tactics",
+        "leave a comment",
+        "for our spanish",
     ]
 
     for word in blocked:
@@ -72,6 +72,12 @@ async def handler(event):
     # Strip links and branding line by line
     clean_lines = []
     for line in text.split("\n"):
+        if "boost us" in line.lower():
+            break
+        if "chat |" in line.lower():
+            break
+        if "geopolitics" in line.lower():
+            break
         if "x.com" in line.lower():
             continue
         if "https://" in line.lower():
