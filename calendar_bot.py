@@ -47,7 +47,7 @@ async def post_calendar(client):
                 time_str = event_time_ist.strftime("%I:%M %p")
             except:
                 time_str = "All Day"
-            line = f"⏰ {time_str} - {currency} - {title}"
+            line = f"• {time_str} | {currency} | {title}"
             if impact == "High":
                 high.append(line)
             elif impact == "Medium":
@@ -55,19 +55,29 @@ async def post_calendar(client):
             else:
                 low.append(line)
 
-        message = f"📅 ECONOMIC CALENDAR\n{now.strftime('%A, %d %B %Y')}\n\n"
-        if high:
-            message += "🔴 HIGH IMPACT:\n" + "\n".join(high) + "\n\n"
-        if medium:
-            message += "🟡 MEDIUM IMPACT:\n" + "\n".join(medium) + "\n\n"
-        if low:
-            message += "🟢 LOW IMPACT:\n" + "\n".join(low) + "\n\n"
-        if not high and not medium and not low:
-            message += "No major events today! 🟢\n\n"
-        message += f"⏰ {now.strftime('%I:%M %p IST')}\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
+        message = f"📅 **ECONOMIC CALENDAR**\n**{now.strftime('%A, %d %B %Y')}**\n\n"
 
-        await client.send_message(DEST, message, parse_mode='md', link_preview=False)
-        print("Calendar posted successfully!")
+        if high:
+            message += "🔴 **HIGH IMPACT:**\n"
+            message += "\n".join(high) + "\n\n"
+
+        if medium:
+            message += "🟡 **MEDIUM IMPACT:**\n"
+            message += "\n".join(medium) + "\n\n"
+
+        if low:
+            message += "🟢 **LOW IMPACT:**\n"
+            message += "\n".join(low) + "\n\n"
+
+        if not high and not medium and not low:
+            message += "_No major events today!_ 🟢\n\n"
+
+        message += f"⏰ _{now.strftime('%I:%M %p IST')}_\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
+
+        # Send and auto-pin
+        sent_msg = await client.send_message(DEST, message, parse_mode='md', link_preview=False)
+        await client.pin_message(DEST, sent_msg.id)
+        print("Calendar posted and pinned successfully!")
 
     except Exception as e:
         print(f"Calendar error: {e}")
