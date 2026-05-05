@@ -8,7 +8,7 @@ from telethon.sessions import StringSession
 API_ID = int(os.environ.get("API_ID"))
 API_HASH = os.environ.get("API_HASH")
 SESSION = os.environ.get("SESSION")
-SOURCE = [-1001263412188, -1001553432571, -1003552874886, -1001860107178]
+SOURCE = [-1001263412188, -1001553432571, -1003552874886]
 DEST = -1003803840028
 
 class Handler(BaseHTTPRequestHandler):
@@ -42,11 +42,9 @@ async def handler(event):
     if not text:
         return
 
-    # Block Spanish messages
     if is_spanish(text):
         return
 
-    # Block entire message if contains these
     blocked = [
         "t.me", "telegram.me",
         "@sroshmayi", "@srosh_support",
@@ -57,7 +55,7 @@ async def handler(event):
         "follow us", "premium", "subscribe",
         "pip net profit", "winning trades", "losing trades",
         "upgrade your trading", "trade smarter",
-        "sm team", "sm co", "srosh",
+        "sm team", "sm co",
         "best regards", "want the same results",
         "join today", "financialjuice",
         "walter bloomberg", "join our",
@@ -69,9 +67,16 @@ async def handler(event):
         if word.lower() in text.lower():
             return
 
-    # Strip links and branding line by line
     clean_lines = []
     for line in text.split("\n"):
+        if "follow sm news" in line.lower():
+            break
+        if "sm news for" in line.lower():
+            break
+        if "company profit reports" in line.lower():
+            break
+        if "real-time company" in line.lower():
+            break
         if "boost us" in line.lower():
             break
         if "chat |" in line.lower():
@@ -86,6 +91,8 @@ async def handler(event):
             continue
         if "updates from" in line.lower():
             break
+        if "srosh" in line.lower():
+            break
         clean_lines.append(line)
 
     clean_text = "\n".join(clean_lines).strip()
@@ -93,10 +100,10 @@ async def handler(event):
     if not clean_text:
         return
 
-    # Add timestamp and source
+    # Add timestamp and channel link only
     ist = timezone(timedelta(hours=5, minutes=30))
     now = datetime.now(ist).strftime("%d %b %Y | %I:%M %p IST")
-    final_text = f"{clean_text}\n\n📰 Reuters 0delaynews\n⏰ {now}\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
+    final_text = f"{clean_text}\n\n⏰ {now}\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
 
     await client.send_message(DEST, final_text, link_preview=False, parse_mode='md')
 
