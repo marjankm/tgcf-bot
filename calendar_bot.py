@@ -55,6 +55,32 @@ async def post_calendar(client):
         message += f"⏰ {now.strftime('%I:%M %p IST')}\n📢 [Zero Delay News](https://t.me/zerodelaynewslive)"
 
         await client.send_message(DEST, message, parse_mode='md', link_preview=False)
+        print("Calendar posted successfully!")
 
     except Exception as e:
         print(f"Calendar error: {e}")
+
+async def schedule_calendar(client):
+    # Post immediately for testing
+    print("Posting calendar now for test...")
+    await post_calendar(client)
+    
+    # Then schedule daily at 7:00 AM IST
+    while True:
+        now = datetime.now(IST)
+        target = now.replace(hour=7, minute=0, second=0, microsecond=0)
+        if now >= target:
+            target = target + timedelta(days=1)
+        wait = (target - now).total_seconds()
+        print(f"Next calendar post in {wait/3600:.1f} hours")
+        await asyncio.sleep(wait)
+        await post_calendar(client)
+
+async def main():
+    client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
+    await client.start()
+    print("Calendar bot started!")
+    await schedule_calendar(client)
+
+if __name__ == "__main__":
+    asyncio.run(main())
