@@ -14,8 +14,9 @@ SOURCE = [-1001263412188, -1001553432571, -1003552874886, -1002006131201, -10016
 DEST = -1003803840028
 IST = timezone(timedelta(hours=5, minutes=30))
 
-# Store recent messages to avoid duplicates
-recent_messages = set()
+# Duplicate filter
+recent_messages = []
+MAX_RECENT = 200
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -30,14 +31,13 @@ threading.Thread(target=lambda: HTTPServer(("0.0.0.0", 10000), Handler).serve_fo
 client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
 
 def is_duplicate(text):
-    # Use first 100 characters as fingerprint
     fingerprint = text[:100].lower().strip()
     if fingerprint in recent_messages:
+        print("Duplicate skipped!")
         return True
-    recent_messages.add(fingerprint)
-    # Keep only last 100 messages
-    if len(recent_messages) > 100:
-        recent_messages.pop()
+    recent_messages.append(fingerprint)
+    if len(recent_messages) > MAX_RECENT:
+        recent_messages.pop(0)
     return False
 
 def is_spanish(text):
@@ -128,15 +128,26 @@ async def handler(event):
     # Handle photo messages
     if msg.photo:
         text = msg.raw_text or ""
+
         if is_spanish(text):
             return
+
         clean_text = clean_message(text) if text else ""
+
         if clean_text is None:
             return
-        if clean_text and is_duplicate(clean_text):
-            print("Duplicate photo message skipped!")
+
+        # Use clean text for duplicate check
+        check_text = clean_text if clean_text else "photo_no_caption"
+        if is_duplicate(check_text):
             return
-        caption = f"{clean_text}{footer}" if clean_text else footer.strip()
+
+        # Build caption
+        if clean_text:
+            caption = f"{clean_text}{footer}"
+        else:
+            caption = footer.strip()
+
         await client.send_file(
             DEST,
             msg.photo,
@@ -149,17 +160,20 @@ async def handler(event):
     text = msg.raw_text
     if not text:
         return
+
     if is_spanish(text):
         return
+
     clean_text = clean_message(text)
+
     if clean_text is None:
         return
+
     if not clean_text:
         return
 
     # Check duplicate
     if is_duplicate(clean_text):
-        print("Duplicate message skipped!")
         return
 
     final_text = f"{clean_text}{footer}"
